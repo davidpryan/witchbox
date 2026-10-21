@@ -528,12 +528,9 @@ static void draw_home_strip(uint32_t strip)          /* 6 tracks over strips 0..
         }
     } else {
         txt(4, 0, "DROP BUILD BREAK FILL THROW", C_GRAY);
-        txt(4, 16, "CATCH SONG   (BLACK KEYS)", C_GRAY);
-        txt(4, 36, "DUCK", C_GRAY);
-        bar_h(50, 40, 100, 8, (uint32_t)(32767 - wb_pos.duck) * 255u / 32767u, C_AMB);
-        txt(160, 36, "SEED", C_GRAY);
-        txtn(206, 36, (int32_t)(G.seed[0] | (uint32_t)G.seed[1] << 8) % 1000, C_HI);
-        if (ui.track != T_DRUMS && ui.track != T_WEATHER) { txt(4, 50, "OCT", C_GRAY); txtn(36, 50, (int32_t)ui.octave, C_HI); }
+        txt(4, 20, "CATCH SONG", C_GRAY);
+        txt(118, 20, "DUCK", C_GRAY);
+        bar_h(164, 24, 72, 8, (uint32_t)(32767 - wb_pos.duck) * 255u / 32767u, C_AMB);
     }
     cv_blit(0, 32 + strip * 64);
 }
@@ -565,16 +562,18 @@ static void draw_loose_strip(uint32_t strip)
         txt(4, 40, "FEEL", C_GRAY); txt(60, 40, G.feel ? "HALF-TIME" : "2-STEP", C_HI);
         txt(160, 40, ui.row == 0 ? "<" : "", C_WHITE);
     } else if (strip == 1) {
+        static const char *const TR2[WB_NTRACK] = {"GH", "SU", "PA", "KE", "DR", "WE"};
         for (i = 0; i < WB_NTRACK; i++) {
             int32_t x = 4 + (int32_t)i * 40;
-            txt(x, 0, WB_TRACK_NAME[i], (ui.row == 1u && i < 4u) || (ui.row == 2u && i >= 4u) ? C_HI : C_GRAY);
+            txt(x, 0, TR2[i], (ui.row == 1u && i < 4u) || (ui.row == 2u && i >= 4u) ? C_HI : C_GRAY);
             bar_h(x, 18, 34, 6, (uint32_t)G.drift[i] * 255u / 100u, C_AMB);
             txtn(x, 26, G.drift[i], C_HI);
         }
     } else {
+        static const char *const LN2[WB_NLANE] = {"KK", "SN", "RM", "HC", "HO", "CL", "SH", "CR"};
         for (i = 0; i < WB_NLANE; i++) {
             int32_t x = 4 + (int32_t)i * 30;
-            txt(x, 0, WB_LANE_NAME[i], (ui.row == 2u && i < 2u) || (ui.row == 3u && i >= 2u && i < 6u) || (ui.row == 4u && i >= 6u) ? C_HI : C_GRAY);
+            txt(x, 0, LN2[i], (ui.row == 2u && i < 2u) || (ui.row == 3u && i >= 2u && i < 6u) || (ui.row == 4u && i >= 6u) ? C_HI : C_GRAY);
             bar_h(x, 18, 26, 6, (uint32_t)G.drift[WB_NTRACK + i] * 255u / 100u, C_AMB);
             txtn(x, 26, G.drift[WB_NTRACK + i], C_HI);
         }
@@ -636,6 +635,7 @@ static void draw_summon_strip(uint32_t strip)
     } else if (strip == 1) {
         txt(4, 0, "KEY", C_GRAY); txtn(40, 0, G.root, C_HI); txt(70, 0, WB_SCALES[G.scale % WB_NSCALE].name, C_HI);
         txt(4, 20, "BPM", C_GRAY); txtn(40, 20, G.bpm, C_HI); txt(100, 20, G.feel ? "HALF" : "2-STEP", C_AMB);
+        txt(160, 20, "SEED", C_GRAY); txtn(206, 20, (int32_t)(G.seed[0] | (uint32_t)G.seed[1] << 8) % 1000, C_HI);
         txt(4, 40, "SONG: INTRO BUILD DROP BREAK", C_DIM);
     } else {
         txt(4, 0, "PATTERNS A-D ARE WRITTEN,", C_GRAY);
