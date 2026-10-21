@@ -30,10 +30,10 @@ footer { max-width: 1120px; margin: 36px auto 0; color: var(--mute); font-size: 
 </style>
 <header>
   <h1>WitchBox Looks</h1>
-  <p>Twenty visual identities for the same 240×240 screen: the HOME mixer during a DROP, bar 14, 134 BPM, two tracks muted. Pick one, or point at pieces of several. The type here stands in for a bitmap font the firmware would render at 16 px.</p>
+  <p>Forty visual identities for the same 240×240 screen: the HOME mixer during a DROP, bar 14, 134 BPM, two tracks muted. Pick one, or point at pieces of several. The type here stands in for a bitmap font the firmware would render at 16 px.</p>
 </header>
 <div class="grid" id="grid"></div>
-<footer>Rendered from one content model so the looks compare fairly. Numbers 01–20 are just for pointing at them. The current firmware is number 1.</footer>
+<footer>Rendered from one content model so the looks compare fairly. Numbers 01–40 are just for pointing at them; 21–40 were added second. The current firmware is number 1.</footer>
 <script>
 const TR = [["GHOST", .36, 190, 0], ["SUB", .58, 230, 0], ["PADS", .22, 200, 1], ["KEYS", .14, 200, 0], ["DRUMS", .62, 200, 0], ["WEATHER", .11, 150, 1]];
 const KN = [["BPM", 134, .53], ["SWING", 56, .56], ["LOOSE", 55, .55], ["LOPASS", 255, 1]];
@@ -159,6 +159,226 @@ function layoutRadar(S) {
   return o;
 }
 
+
+/* ---- more layouts for looks 21..40 */
+const SEG = { 0: "abcdef", 1: "bc", 2: "abdeg", 3: "abcdg", 4: "bcfg", 5: "acdfg", 6: "acdefg", 7: "abc", 8: "abcdefg", 9: "abcdfg" };
+function seg7(x, y, str, h, on, off) {
+  const w = h * .55, t = Math.max(1.2, h / 9); let o = "";
+  const parts = { a: [x + t, y, w - 2 * t, t], b: [x + w - t, y + t, t, h / 2 - t * 1.5], c: [x + w - t, y + h / 2 + t / 2, t, h / 2 - t * 1.5], d: [x + t, y + h - t, w - 2 * t, t], e: [x, y + h / 2 + t / 2, t, h / 2 - t * 1.5], f: [x, y + t, t, h / 2 - t * 1.5], g: [x + t, y + h / 2 - t / 2, w - 2 * t, t] };
+  for (const ch of str) {
+    if (ch === " ") { x += w + t * 2; continue; }
+    const lit = SEG[ch] || "";
+    for (const k in parts) { const [px, py, pw, ph] = parts[k]; o += R((px + x - parts.a[0] + t).toFixed(1), py.toFixed(1), pw.toFixed(1), ph.toFixed(1), lit.includes(k) ? on : off, { op: lit.includes(k) ? 1 : .18 }); }
+    x += w + t * 2;
+  }
+  return o;
+}
+function layoutTeletext(S) {
+  const f = S.font; let o = "";
+  const cols = ["#ff0", "#0ff", "#0f0", "#f0f", "#f00", "#fff"];
+  o += R(0, 0, 240, 20, "#00f") + T(4, 15, "P100  WITCHBOX   DROP 14  134", { f, sz: 10, c: "#fff" });
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 28 + i * 24, c = m ? "#777" : cols[i];
+    o += T(4, y + 14, n, { f, sz: 12, c, w: 700 });
+    for (let k = 0; k < 20; k++) o += R(88 + k * 6, y + 3, 5, 12, k < 20 * v ? c : "#222");
+    o += T(236, y + 14, String(l), { f, sz: 12, c: "#fff", a: "end" });
+  });
+  o += R(0, 176, 240, 20, "#0f0") + T(4, 190, "DROP BUILD BREAK FILL THROW", { f, sz: 10, c: "#000", w: 700 });
+  o += T(4, 214, "BPM 134  SWING 56", { f, sz: 12, c: "#0ff" }) + T(4, 232, "LOOSE 55  LOPASS 255", { f, sz: 12, c: "#ff0" });
+  o += T(236, 232, "SEED 168", { f, sz: 10, c: "#f0f", a: "end" });
+  return o;
+}
+function layoutScope(S) {
+  const f = S.font; let o = D.grid(S, 20);
+  o += T(6, 14, "WITCHBOX  DROP  14  134 BPM", { f, sz: 10, c: S.dim });
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 36 + i * 28, amp = m ? 1 : 3 + v * 9; let d = `M 60 ${y}`;
+    for (let x = 60; x <= 234; x += 2) { const ph = (x - 60) / (6 + i * 2); d += ` L ${x} ${(y + Math.sin(ph) * amp * (0.6 + 0.4 * Math.sin(ph / 5))).toFixed(1)}`; }
+    o += `<path d="${d}" fill="none" stroke="${m ? S.dim : S.acc}" stroke-width="1.2" opacity="${m ? .5 : 1}"/>`;
+    o += T(6, y + 4, n.slice(0, 5), { f, sz: 10, c: m ? S.dim : S.fg });
+  });
+  o += R(6, 208, 228, 1, S.line);
+  KN.forEach(([n, v], i) => { const x = 6 + i * 58; o += T(x, 222, n, { f, sz: 9, c: S.dim }); o += T(x, 236, String(v), { f, sz: 12, c: S.hi }); });
+  return o;
+}
+function layoutFlap(S) {
+  const f = S.font; let o = "";
+  const cell = (x, y, ch, c) => R(x, y, 11, 16, "#1a1a1a", { rx: 1 }) + R(x, y + 8, 11, .6, "#000") + T(x + 5.5, y + 12.5, ch, { f, sz: 11, c, a: "middle", w: 700 });
+  const row = (x, y, txt, c) => { let r = ""; [...txt].forEach((ch, k) => { r += cell(x + k * 12, y, ch, c); }); return r; };
+  o += row(6, 6, "WITCHBOX  DROP  14", S.hi);
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 30 + i * 22, bar = "#".repeat(Math.round(v * 8)).padEnd(8, "-");
+    o += row(6, y, n.padEnd(7).slice(0, 7), m ? S.dim : S.fg) + row(96, y, bar, m ? S.dim : S.acc) + row(198, y, String(l), S.fg);
+  });
+  o += row(6, 166, "BPM 134  SWING 56", S.dim) + row(6, 188, "LOOSE 55 LOPASS 255", S.dim);
+  o += row(6, 212, "DROP BUILD BREAK", S.acc);
+  return o;
+}
+function layoutCCTV(S) {
+  const f = S.font; let o = `<rect width="240" height="240" filter="url(#g25)" opacity=".7"/>` + D.scan(S);
+  o += T(6, 14, "CAM 02  WITCHBOX", { f, sz: 10, c: S.fg }) + T(234, 14, "21-10-26 02:14:36", { f, sz: 9, c: S.fg, a: "end" });
+  o += `<circle cx="226" cy="30" r="3" fill="#ff2b2b"/>` + T(220, 34, "REC", { f, sz: 9, c: S.fg, a: "end" });
+  o += `<path d="M 120 100 L 120 140 M 100 120 L 140 120" stroke="${S.fg}" stroke-width=".8" opacity=".6"/><rect x="90" y="90" width="60" height="60" fill="none" stroke="${S.fg}" stroke-width=".8" opacity=".5"/>`;
+  TR.forEach(([n, v, l, m], i) => { const y = 48 + i * 15; o += T(6, y, n, { f, sz: 10, c: m ? S.dim : S.fg }); o += meter("seg", 70, y - 8, 70, 7, v, m ? S.dim : S.fg, S.line, S); o += T(160, y, String(l), { f, sz: 10, c: S.fg }); });
+  o += T(6, 222, "DROP 14  134 BPM  SW 56  LOOSE 55", { f, sz: 9, c: S.fg });
+  o += T(234, 236, "DUCK ||||||||..", { f, sz: 9, c: S.fg, a: "end" });
+  return o;
+}
+function layoutPolaroid(S) {
+  const f = S.font; let o = R(14, 10, 212, 220, "#f4f1ea") + R(24, 20, 192, 160, "#0c0e14");
+  o += `<clipPath id="ph"><rect x="24" y="20" width="192" height="160"/></clipPath><g clip-path="url(#ph)">` + D.bokeh({ acc: "#ffb547" }, 13) + D.rain({ line: "#2b3550" }, 4, 40) + `</g>`;
+  TR.forEach(([n, v, l, m], i) => { const y = 36 + i * 22; o += T(32, y + 10, n.toLowerCase(), { f: "Share Tech Mono", sz: 10, c: m ? "#5a6378" : "#e6dccb" }); o += meter("ink", 110, y + 3, 80, 5, v, m ? "#5a6378" : "#ffb547", "#242a3a", S); o += T(208, y + 10, String(l), { f: "Share Tech Mono", sz: 9, c: "#8a94a8", a: "end" }); });
+  o += T(120, 206, "night bus, 134, drop at 14", { f, sz: 15, c: "#2a2420", a: "middle" });
+  o += T(120, 222, "swing 56 · loose 55", { f, sz: 12, c: "#6a6058", a: "middle" });
+  return o;
+}
+function layoutHymn(S) {
+  const f = S.font; let o = R(0, 0, 240, 240, S.bg) + R(10, 10, 220, 220, "none", { st: S.acc, sw: 1.5 }) + R(14, 14, 212, 212, "none", { st: S.acc, sw: .5 });
+  o += T(120, 32, "W I T C H B O X", { f, sz: 12, c: S.acc, a: "middle" }) + T(120, 46, "drop · bar 14 · 134", { f, sz: 10, c: S.dim, a: "middle", it: 1 });
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 66 + i * 24;
+    o += R(26, y - 14, 188, 20, "#000", { op: .35 }) + T(34, y, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 13, c: m ? S.dim : S.fg });
+    for (let k = 0; k < 10; k++) o += `<circle cx="${130 + k * 8}" cy="${y - 4}" r="2.2" fill="${k < 10 * v ? S.acc : "none"}" stroke="${S.acc}" stroke-width=".6" opacity="${m ? .4 : 1}"/>`;
+    o += T(208, y, String(l), { f, sz: 12, c: S.acc, a: "end" });
+  });
+  o += T(120, 222, "bpm 134   swing 56   loose 55", { f, sz: 10, c: S.dim, a: "middle", it: 1 });
+  return o;
+}
+function layoutCasio(S) {
+  const f = S.font; let o = D.lcdPix(S);
+  o += T(6, 14, "WITCHBOX", { f, sz: 8, c: S.fg }) + T(234, 14, "DROP 14", { f, sz: 8, c: S.fg, a: "end" });
+  o += seg7(60, 22, "134", 34, S.fg, S.dim) + T(150, 54, "BPM", { f, sz: 8, c: S.fg });
+  TR.forEach(([n, v, l, m], i) => { const x = 6 + i * 39, y = 72; o += T(x, y, n.slice(0, 4), { f, sz: 7, c: m ? S.dim : S.fg }); o += seg7(x, y + 4, String(l), 18, m ? S.dim : S.fg, S.dim); for (let k = 0; k < 8; k++) o += R(x + k * 4, y + 28, 3, 4, k < 8 * v ? S.fg : S.dim, { op: k < 8 * v ? 1 : .25 }); });
+  o += R(6, 114, 228, 1, S.fg);
+  o += T(6, 130, "SWING", { f, sz: 7, c: S.fg }) + seg7(6, 134, "56", 22, S.fg, S.dim) + T(66, 130, "LOOSE", { f, sz: 7, c: S.fg }) + seg7(66, 134, "55", 22, S.fg, S.dim) + T(126, 130, "LOPASS", { f, sz: 7, c: S.fg }) + seg7(126, 134, "255", 22, S.fg, S.dim);
+  o += T(6, 176, "DUCK", { f, sz: 7, c: S.fg }); for (let k = 0; k < 20; k++) o += R(40 + k * 9, 170, 7, 6, k < 14 ? S.fg : S.dim, { op: k < 14 ? 1 : .25 });
+  o += T(6, 196, "MODE  LIGHT  ADJ", { f, sz: 7, c: S.dim }) + T(234, 196, "ALARM CHRONO", { f, sz: 7, c: S.dim, a: "end" });
+  o += T(6, 226, "DROP BUILD BREAK FILL", { f, sz: 8, c: S.fg });
+  return o;
+}
+function layoutTicket(S) {
+  const f = S.font; let o = R(8, 24, 224, 192, S.card, { rx: 8 }) + R(8, 24, 224, 34, S.acc, { rx: 8 }) + R(8, 46, 224, 12, S.acc);
+  o += T(18, 46, "WITCHBOX", { f, sz: 14, c: "#fff", w: 800 }) + T(222, 46, "SINGLE", { f, sz: 9, c: "#fff", a: "end", w: 800 });
+  o += T(18, 74, "FROM  INTRO", { f, sz: 9, c: S.dim, w: 700 }) + T(18, 88, "TO    DROP · BAR 14", { f, sz: 9, c: S.dim, w: 700 });
+  o += T(222, 88, "134 BPM", { f, sz: 12, c: S.fg, a: "end", w: 800 });
+  TR.forEach(([n, v, l, m], i) => { const y = 108 + i * 15; o += T(18, y, n, { f, sz: 9, c: m ? S.dim : S.fg, w: 700 }); o += R(90, y - 7, 100, 6, S.line, { rx: 3 }) + R(90, y - 7, 100 * v, 6, m ? S.dim : S.acc2, { rx: 3 }); o += T(222, y, String(l), { f, sz: 9, c: S.dim, a: "end" }); });
+  o += `<line x1="8" y1="200" x2="232" y2="200" stroke="${S.line}" stroke-dasharray="3 3"/>`;
+  o += T(18, 211, "SWING 56   LOOSE 55   VALID 1 BAR", { f, sz: 8, c: S.dim, w: 700 });
+  o += T(120, 234, "T O U C H   I N   ·   T O U C H   O U T", { f, sz: 8, c: S.dim, a: "middle" });
+  return o;
+}
+function layoutArcade(S) {
+  const f = S.font; let o = "";
+  o += T(120, 22, "HIGH SCORES", { f, sz: 12, c: S.hi, a: "middle" }) + T(120, 38, "WITCHBOX  DROP  14", { f, sz: 8, c: S.acc, a: "middle" });
+  TR.forEach(([n, v, l, m], i) => { const y = 62 + i * 22, c = m ? S.dim : [S.hi, S.acc, S.fg][i % 3]; o += T(14, y, String(i + 1) + ".", { f, sz: 9, c }); o += T(40, y, n.slice(0, 5), { f, sz: 9, c }); o += T(150, y, String(Math.round(v * 99900)).padStart(6, "0"), { f, sz: 9, c }); o += T(226, y, String(l), { f, sz: 9, c, a: "end" }); });
+  o += T(120, 206, "INSERT COIN", { f, sz: 10, c: S.hi, a: "middle" }) + T(120, 226, "134 BPM  SW 56  LS 55", { f, sz: 8, c: S.dim, a: "middle" });
+  return o;
+}
+function layoutDials(S) {
+  const f = S.font; let o = T(12, 22, "WitchBox", { f, sz: 14, c: S.fg, w: 600 }) + T(228, 22, "DROP  14", { f, sz: 10, c: S.dim, a: "end" }) + R(12, 30, 216, 1, S.line);
+  TR.forEach(([n, v, l, m], i) => {
+    const cx = 44 + (i % 3) * 76, cy = 72 + Math.floor(i / 3) * 76, a = -Math.PI * .75 + v * Math.PI * 1.5;
+    o += `<circle cx="${cx}" cy="${cy}" r="24" fill="${S.card}" stroke="${S.line}"/>`;
+    for (let k = 0; k <= 10; k++) { const aa = -Math.PI * .75 + k * Math.PI * .15; o += `<line x1="${(cx + Math.cos(aa) * 20).toFixed(1)}" y1="${(cy + Math.sin(aa) * 20).toFixed(1)}" x2="${(cx + Math.cos(aa) * 23).toFixed(1)}" y2="${(cy + Math.sin(aa) * 23).toFixed(1)}" stroke="${S.dim}" stroke-width=".8"/>`; }
+    o += `<line x1="${cx}" y1="${cy}" x2="${(cx + Math.cos(a) * 18).toFixed(1)}" y2="${(cy + Math.sin(a) * 18).toFixed(1)}" stroke="${m ? S.dim : S.acc}" stroke-width="2" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="3" fill="${m ? S.dim : S.acc}"/>`;
+    o += T(cx, cy + 38, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 9, c: m ? S.dim : S.fg, a: "middle" }) + T(cx, cy + 48, String(l), { f, sz: 8, c: S.dim, a: "middle" });
+  });
+  o += R(12, 204, 216, 1, S.line);
+  KN.forEach(([n, v], i) => { const x = 12 + i * 55; o += T(x, 220, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 8, c: S.dim }); o += T(x, 234, String(v), { f, sz: 12, c: S.fg, w: 600 }); });
+  return o;
+}
+function layoutTarot(S) {
+  const f = S.font; let o = R(8, 8, 224, 224, "none", { st: S.acc, sw: 1 }) + R(12, 12, 216, 216, "none", { st: S.acc, sw: .4 });
+  o += `<path d="M 120 14 l 4 8 l -8 0 z M 120 226 l 4 -8 l -8 0 z" fill="${S.acc}"/>`;
+  o += T(120, 34, "✦ WITCHBOX ✦", { f, sz: 12, c: S.acc, a: "middle" }) + T(120, 48, "the drop · bar xiv · 134", { f, sz: 10, c: S.dim, a: "middle", it: 1 });
+  TR.forEach(([n, v, l, m], i) => {
+    const cx = 44 + (i % 3) * 76, cy = 86 + Math.floor(i / 3) * 62, r = 16, k = v;
+    o += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${S.card}" stroke="${S.acc}" stroke-width=".8"/>`;
+    const sx = r * (1 - 2 * k);
+    o += `<path d="M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${Math.abs(sx).toFixed(1)} ${r} 0 0 ${k > .5 ? 1 : 0} ${cx} ${cy - r} Z" fill="${m ? S.dim : S.hi}" opacity="${m ? .4 : .95}"/>`;
+    o += T(cx, cy + 30, n.toLowerCase(), { f, sz: 10, c: m ? S.dim : S.fg, a: "middle", it: 1 }) + T(cx, cy + 40, String(l), { f, sz: 8, c: S.acc, a: "middle" });
+  });
+  o += T(120, 222, "swing lvi · loose lv · lopass cclv", { f, sz: 9, c: S.dim, a: "middle", it: 1 });
+  return o;
+}
+function layoutContour(S) {
+  const f = S.font; const r = seeded(31); let o = "";
+  for (let k = 0; k < 14; k++) { let d = `M -10 ${20 + k * 16}`; for (let x = 0; x <= 250; x += 10) d += ` Q ${x + 5} ${(20 + k * 16 + Math.sin(x / 30 + k) * 9 + (r() - .5) * 4).toFixed(1)} ${x + 10} ${(20 + k * 16 + Math.sin((x + 10) / 30 + k) * 9).toFixed(1)}`; o += `<path d="${d}" fill="none" stroke="${k % 5 === 0 ? S.acc : S.line}" stroke-width="${k % 5 === 0 ? 1 : .6}" opacity=".9"/>`; }
+  o += R(6, 6, 118, 18, S.bg, { op: .9 }) + T(10, 19, "WITCHBOX  SHEET 14", { f, sz: 9, c: S.fg, w: 700 });
+  TR.forEach(([n, v, l, m], i) => { const y = 40 + i * 24; o += R(6, y - 11, 124, 15, S.bg, { op: .92 }); o += `<circle cx="14" cy="${y - 4}" r="3" fill="${m ? S.dim : S.acc2}"/>` + T(22, y, n, { f, sz: 9, c: m ? S.dim : S.fg, w: 700 }); o += T(126, y, String(l), { f, sz: 9, c: S.dim, a: "end" }); for (let k = 0; k < 8; k++) o += `<circle cx="${150 + k * 11}" cy="${y - 4}" r="${k < 8 * v ? 3.5 : 1.2}" fill="${m ? S.dim : S.acc2}" stroke="${S.bg}" stroke-width=".6"/>`; });
+  o += R(6, 196, 228, 36, S.bg, { op: .92 }) + T(10, 210, "134 BPM   SWING 56   LOOSE 55", { f, sz: 9, c: S.fg, w: 700 }) + T(10, 224, "DROP · BUILD · BREAK · FILL · THROW", { f, sz: 8, c: S.dim });
+  return o;
+}
+function layoutSpectro(S) {
+  const f = S.font; const r = seeded(17); let o = "";
+  const ramp = ["#12003a", "#4b0a7a", "#9b1c7a", "#e04a3a", "#ffa426", "#fff2a8"];
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 26 + i * 30;
+    for (let x = 0; x < 42; x++) { const e = m ? r() * .15 : Math.min(1, v * (0.6 + r()) * (1 - Math.abs(x - 24) / 60)); o += R(60 + x * 4, y, 4, 22, ramp[Math.min(5, Math.floor(e * 5.99))]); }
+    o += T(6, y + 15, n.slice(0, 6), { f, sz: 9, c: m ? S.dim : S.fg });
+    o += R(226, y, 14, 22, S.bg) + T(238, y + 15, String(l), { f, sz: 8, c: S.dim, a: "end" });
+  });
+  o += T(6, 16, "WITCHBOX  DROP 14  134", { f, sz: 9, c: S.fg }) + T(234, 16, "0-11k", { f, sz: 8, c: S.dim, a: "end" });
+  o += R(6, 208, 228, 1, S.line) + T(6, 224, "SWING 56  LOOSE 55  LOPASS 255", { f, sz: 9, c: S.dim }) + T(6, 236, "DUCK", { f, sz: 8, c: S.dim }); for (let k = 0; k < 5; k++) o += R(40 + k * 12, 231, 10, 5, k < 4 ? ramp[k + 1] : S.line);
+  return o;
+}
+function layoutDesk(S) {
+  const f = S.font; let o = R(0, 0, 240, 240, S.bg);
+  TR.forEach(([n, v, l, m], i) => {
+    const x = 8 + i * 39;
+    o += R(x, 10, 34, 220, S.card) + R(x + 15, 22, 4, 150, "#000", { op: .6 });
+    for (let k = 0; k <= 10; k++) o += R(x + 6, 24 + k * 15, 5, 1, S.dim) + R(x + 23, 24 + k * 15, 5, 1, S.dim);
+    const fy = 172 - v * 150; o += R(x + 8, fy - 6, 18, 12, m ? S.dim : S.fg, { rx: 1 }) + R(x + 8, fy - .5, 18, 1, S.acc);
+    o += R(x + 2, 182, 30, 16, S.tape) + T(x + 17, 194, n.slice(0, 5), { f, sz: 8, c: "#2a2a2a", a: "middle" });
+    o += `<circle cx="${x + 17}" cy="212" r="7" fill="${S.knob}" stroke="${S.line}"/><line x1="${x + 17}" y1="212" x2="${(x + 17 + Math.cos(-Math.PI * .75 + l / 255 * Math.PI * 1.5) * 6).toFixed(1)}" y2="${(212 + Math.sin(-Math.PI * .75 + l / 255 * Math.PI * 1.5) * 6).toFixed(1)}" stroke="${S.fg}" stroke-width="1.5"/>`;
+    o += `<circle cx="${x + 17}" cy="226" r="2.5" fill="${m ? "#ff3b3b" : "#2ecc71"}"/>`;
+  });
+  return o;
+}
+function layoutEink(S) {
+  const f = S.font; let o = R(0, 0, 240, 240, S.bg);
+  o += T(120, 34, "WitchBox", { f, sz: 22, c: S.fg, a: "middle" }) + T(120, 50, "the drop, bar fourteen, 134 beats", { f, sz: 10, c: S.dim, a: "middle", it: 1 });
+  o += R(40, 58, 160, .6, S.fg);
+  TR.forEach(([n, v, l, m], i) => { const y = 80 + i * 22; o += T(40, y, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 12, c: m ? S.dim : S.fg }); let dots = ""; for (let k = 0; k < 16; k++) dots += R(118 + k * 5, y - 5, 3, 3, k < 16 * v ? S.fg : S.dim, { op: k < 16 * v ? 1 : .35 }); o += dots + T(200, y, String(l), { f, sz: 10, c: S.dim, a: "end" }); });
+  o += R(40, 216, 160, .6, S.fg) + T(120, 232, "swing 56 · loose 55 · lopass open", { f, sz: 9, c: S.dim, a: "middle", it: 1 });
+  return o;
+}
+function layoutFilm(S) {
+  const f = S.font; const r = seeded(41); let o = R(0, 0, 240, 240, S.bg);
+  for (let i = 0; i < 12; i++) o += R((r() * 240).toFixed(1), 0, .8, 240, S.fg, { op: (.1 + r() * .3).toFixed(2) });
+  o += `<circle cx="120" cy="112" r="92" fill="none" stroke="${S.fg}" stroke-width="1.5"/><circle cx="120" cy="112" r="80" fill="none" stroke="${S.fg}" stroke-width="1"/><line x1="120" y1="12" x2="120" y2="212" stroke="${S.fg}" stroke-width="1"/><line x1="20" y1="112" x2="220" y2="112" stroke="${S.fg}" stroke-width="1"/>`;
+  o += `<path d="M 120 112 L 120 32 A 80 80 0 0 1 189 72 Z" fill="${S.fg}" opacity=".85"/>`;
+  o += T(120, 136, "14", { f, sz: 64, c: S.fg, a: "middle", w: 700 });
+  o += R(0, 0, 240, 14, S.fg) + T(4, 11, "WITCHBOX   PICTURE START   134 BPM", { f, sz: 8, c: S.bg, w: 700 });
+  TR.forEach(([n, v, l, m], i) => { const x = 6 + i * 39; o += T(x, 232, n.slice(0, 5), { f, sz: 7, c: m ? S.dim : S.fg }); o += R(x, 220, 34, 4, S.dim, { op: .4 }) + R(x, 220, 34 * v, 4, m ? S.dim : S.fg); });
+  return o;
+}
+function layoutPager(S) {
+  const f = S.font; let o = R(0, 0, 240, 240, S.bg) + R(14, 70, 212, 100, S.lcd, { rx: 4 }) + R(14, 70, 212, 100, "none", { st: "#000", sw: 3 });
+  o += T(24, 92, "WITCHBOX  DROP 14", { f, sz: 10, c: S.fg }) + T(24, 118, "134 BPM", { f, sz: 20, c: S.fg }) + T(24, 140, "GH36 SU58 PA22 KE14", { f, sz: 10, c: S.fg }) + T(24, 156, "DR62 WE11  SW56 LS55", { f, sz: 10, c: S.fg });
+  o += T(216, 92, "▌▌▌", { f, sz: 10, c: S.fg, a: "end" });
+  o += T(120, 40, "W I T C H B O X", { f, sz: 10, c: S.dim, a: "middle" });
+  [["DROP", 40], ["BUILD", 90], ["BREAK", 140], ["FILL", 190]].forEach(([n, x]) => { o += R(x - 20, 190, 40, 22, S.btn, { rx: 4 }) + T(x, 205, n, { f, sz: 8, c: S.dim, a: "middle" }); });
+  o += T(120, 232, "1 MSG · SEED 168", { f, sz: 8, c: S.dim, a: "middle" });
+  return o;
+}
+function layoutSlate(S) {
+  const f = S.font; let o = T(16, 28, "WitchBox", { f, sz: 18, c: S.fg, w: 800 }) + R(176, 14, 48, 20, S.acc, { rx: 10 }) + T(200, 28, "DROP", { f, sz: 9, c: "#fff", a: "middle", w: 800 });
+  TR.forEach(([n, v, l, m], i) => { const y = 46 + i * 24; o += T(16, y + 12, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 11, c: m ? S.dim : S.fg, w: 600 }); o += R(96, y + 5, 100, 6, S.line, { rx: 3 }) + R(96, y + 5, 100 * v, 6, m ? S.dim : S.acc, { rx: 3 }) + `<circle cx="${96 + 100 * v}" cy="${y + 8}" r="6" fill="${S.card}" stroke="${m ? S.dim : S.acc}" stroke-width="2"/>`; o += T(224, y + 12, String(l), { f, sz: 10, c: S.dim, a: "end", w: 600 }); });
+  o += R(16, 196, 208, 36, S.card, { rx: 10 });
+  KN.forEach(([n, v], i) => { const x = 28 + i * 52; o += T(x, 211, n.charAt(0) + n.slice(1).toLowerCase(), { f, sz: 8, c: S.dim, w: 600 }); o += T(x, 226, String(v), { f, sz: 13, c: S.fg, w: 800 }); });
+  return o;
+}
+function layoutGraphPaper(S) {
+  const f = S.font; let o = D.grid(S, 10);
+  for (let i = 0; i <= 240; i += 50) o += `<line x1="${i}" y1="0" x2="${i}" y2="240" stroke="${S.dim}" stroke-width=".5" opacity=".6"/><line x1="0" y1="${i}" x2="240" y2="${i}" stroke="${S.dim}" stroke-width=".5" opacity=".6"/>`;
+  o += T(12, 24, "WitchBox — drop, bar 14, 134 bpm", { f, sz: 13, c: S.fg });
+  TR.forEach(([n, v, l, m], i) => { const y = 54 + i * 24; o += T(12, y, n.toLowerCase(), { f, sz: 13, c: m ? S.dim : S.fg }); o += `<path d="M 100 ${y - 4} l ${100 * v} 0" stroke="${m ? S.dim : S.acc}" stroke-width="2.5" stroke-linecap="round"/><path d="M 100 ${y - 8} l 0 8" stroke="${S.fg}" stroke-width="1"/>`; o += T(226, y, String(l), { f, sz: 12, c: S.dim, a: "end" }); });
+  o += `<path d="M 60 212 c 20 -16, 40 12, 60 -4 s 40 10, 60 -2" fill="none" stroke="${S.acc}" stroke-width="1.5"/>`;
+  o += T(12, 234, "swing 56   loose 55   lopass 255", { f, sz: 12, c: S.fg });
+  return o;
+}
+
 /* decorations drawn under the content */
 const D = {
   rain(S, seed = 3, n = 60) { const r = seeded(seed); let o = ""; for (let i = 0; i < n; i++) { const x = r() * 240, y = r() * 240, l = 6 + r() * 22; o += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x - l * .25).toFixed(1)}" y2="${(y + l).toFixed(1)}" stroke="${S.rain || S.line}" stroke-width=".8" opacity="${(.2 + r() * .5).toFixed(2)}"/>`; } return o; },
@@ -199,6 +419,30 @@ const LOOKS = [
 ];
 for (const S of LOOKS) if (S.font === "Press Start 2P") S.ls = 0;
 
+const LOOKS2 = [
+  { name: "Teletext", note: "Ceefax page 100: block colours on black, double-height caps, a green status bar. Everything is a cell.", bg: "#000", fg: "#fff", dim: "#777", hi: "#ff0", acc: "#0ff", line: "#222", font: "VT323", layout: layoutTeletext },
+  { name: "Oscilloscope", note: "Each track is a trace on a green graticule; louder is wider. Lab-bench honesty.", bg: "#06120a", fg: "#b9ffd0", dim: "#3f7a53", hi: "#e9ffef", acc: "#49ff8c", line: "#123a20", font: "Share Tech Mono", layout: layoutScope },
+  { name: "Departure Board", note: "Split-flap cells, one character each, amber on black. Meters are hash marks in the flaps.", bg: "#080808", fg: "#f2e8c9", dim: "#6b6250", hi: "#ffc84a", acc: "#ffc84a", line: "#222", font: "IBM Plex Mono", layout: layoutFlap },
+  { name: "CCTV Night", note: "Night-vision grey-green, timestamp, a REC dot, a crosshair. Grain and scanlines over everything.", bg: "#1e2a22", fg: "#cfe4d2", dim: "#6f8a74", hi: "#fff", acc: "#cfe4d2", line: "#2e3f33", font: "Share Tech Mono", layout: layoutCCTV, defs: D.grain("g25") },
+  { name: "Instant Photo", note: "A white instant-film frame around a dark rainy picture; the caption is handwritten underneath.", bg: "#2b2a28", fg: "#2a2420", dim: "#6a6058", hi: "#ffb547", acc: "#ffb547", line: "#242a3a", font: "Caveat", layout: layoutPolaroid },
+  { name: "Hymn Board", note: "Dark wood and brass for the CHURCH mood: small caps, a double rule, numbers in gold. Meters as beads.", bg: "#2a1a12", fg: "#efe2c4", dim: "#8c7a5a", hi: "#ffd98a", acc: "#d4a84b", line: "#3a2719", font: "Cormorant Garamond", layout: layoutHymn },
+  { name: "Casio Watch", note: "Seven-segment everything on a grey LCD, tiny mode labels. BPM is the time, levels are the lap counters.", bg: "#b8c2a6", fg: "#1c2418", dim: "#8c9a7e", hi: "#1c2418", acc: "#1c2418", line: "#a5b093", font: "Silkscreen", layout: layoutCasio },
+  { name: "Travel Card", note: "A transit ticket: a rounded card, a bold blue band, journey FROM intro TO drop, touch in, touch out.", bg: "#e9ecf2", fg: "#102447", dim: "#6f7d99", hi: "#102447", acc: "#1d3fa0", acc2: "#f2b900", line: "#cdd4e3", card: "#fff", font: "Nunito", layout: layoutTicket },
+  { name: "Attract Mode", note: "An arcade high-score table: 8 px pixel caps, three alternating colours, INSERT COIN at the bottom.", bg: "#000", fg: "#fff", dim: "#555", hi: "#ffd400", acc: "#19c5ff", line: "#222", font: "Press Start 2P", layout: layoutArcade },
+  { name: "Rams Dials", note: "Warm grey, precise sans, six round dials with a single orange needle each. Nothing shouts.", bg: "#dcd8cf", fg: "#1f1f1f", dim: "#7a776f", hi: "#1f1f1f", acc: "#f05a1a", line: "#c2bdb2", card: "#eae6de", font: "Nunito", layout: layoutDials },
+  { name: "Tarot Moons", note: "Black, gold line art, a moon phase per track as its level. Roman numerals. The name made literal.", bg: "#0a0908", fg: "#efe6d2", dim: "#7d7364", hi: "#f3e2b0", acc: "#c9a24e", line: "#2a2520", card: "#15120f", font: "Cormorant Garamond", layout: layoutTarot },
+  { name: "Contour Map", note: "Walking-map contours in brown, a blue for water, legend boxes over the lines. Sheet 14.", bg: "#f3eee2", fg: "#2b2419", dim: "#8c7f6a", hi: "#2b2419", acc: "#b5651d", acc2: "#1f6fb2", line: "#d8ccb4", font: "Nunito", layout: layoutContour },
+  { name: "Spectrogram", note: "A heat strip per track, violet to white, like the analyser view in an editor. Dark and clinical.", bg: "#07060c", fg: "#e6e0f2", dim: "#5f5878", hi: "#fff", acc: "#ffa426", line: "#1c1830", font: "IBM Plex Mono", layout: layoutSpectro },
+  { name: "Mixing Desk", note: "Six channel strips with faders, scribble-strip tape and a pan pot each, a status LED at the bottom.", bg: "#2b2c2e", fg: "#e9e9e6", dim: "#6c6e70", hi: "#fff", acc: "#ff7a00", line: "#1a1b1c", card: "#3a3b3e", tape: "#e7e0c2", knob: "#1e1f21", font: "Barlow Condensed", layout: layoutDesk },
+  { name: "E-Ink Page", note: "Paper white, a book serif, no colour at all. Levels are dotted lines. Reads like a page, not a panel.", bg: "#f7f5ef", fg: "#1a1917", dim: "#8f8b83", hi: "#1a1917", acc: "#1a1917", line: "#e2ded5", font: "Cormorant Garamond", layout: layoutEink },
+  { name: "Film Leader", note: "The countdown leader: a huge bar number inside the crosshair circle, scratches down the frame.", bg: "#101010", fg: "#e8e4dc", dim: "#5e5b55", hi: "#fff", acc: "#e8e4dc", line: "#2a2a2a", font: "Oswald", layout: layoutFilm },
+  { name: "Pager", note: "A beeper: a small backlit LCD strip inside a plastic shell, the whole state as one message. Four buttons.", bg: "#3b3e46", fg: "#1b2a18", dim: "#9ba1ac", hi: "#1b2a18", acc: "#1b2a18", line: "#2a2d33", lcd: "#9fd36b", btn: "#2c2f36", font: "Share Tech Mono", layout: layoutPager },
+  { name: "Slate App", note: "A phone-app treatment: deep slate, one indigo accent, pill sliders with thumbs, a rounded footer card.", bg: "#14161c", fg: "#f1f2f6", dim: "#7b8090", hi: "#fff", acc: "#6c7bff", line: "#262a35", card: "#1d2029", font: "Nunito", layout: layoutSlate },
+  { name: "Graph Paper", note: "Pencil on squared paper: a 10 px grid, handwriting, levels as ruled strokes, a sketched waveform.", bg: "#f8f6ee", fg: "#2f3a4a", dim: "#9aa3b2", hi: "#2f3a4a", acc: "#d64545", line: "#dfe6ea", font: "Caveat", layout: layoutGraphPaper },
+  { name: "Night Bus Noir", note: "Number 2 in monochrome: white rain on black, no amber at all, levels as pale strips. The quiet option.", bg: "#050506", fg: "#e9e9ee", dim: "#5e5e66", hi: "#fff", acc: "#cfcfd8", line: "#1c1c22", rain: "#3a3a44", font: "Share Tech Mono", meter: "ink", layout: layoutList, lower: true, deco: S => D.rain(S, 8, 90) },
+];
+for (const S of LOOKS2) if (S.font === "Press Start 2P") S.ls = 0;
+
 function screen(S) {
   const defs = S.defs ? `<defs>${S.defs}</defs>` : "";
   const deco = S.deco ? `<g>${S.deco(S)}</g>` : "";
@@ -206,7 +450,7 @@ function screen(S) {
   return `<svg viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="${esc(S.name)}">${defs}<rect width="240" height="240" fill="${S.bg}"/>${deco}${body}</svg>`;
 }
 const grid = document.getElementById("grid");
-LOOKS.forEach((S, i) => {
+LOOKS.concat(LOOKS2).forEach((S, i) => {
   const c = document.createElement("div");
   c.className = "card";
   const sw = [S.bg, S.fg, S.dim, S.acc, S.hi, S.line].map(x => `<i style="background:${x}"></i>`).join("");
