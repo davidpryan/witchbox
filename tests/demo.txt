@@ -1,0 +1,47 @@
+# WitchBox host demo: summon a piece in the NIGHT mood, play it, visit the pages.
+# T ms, then: btn ID | hold ID | release ID | keys MASK | enc ID DELTA | midi ST D1 D2 | shot | end
+# buttons: 0 OCT- 1 OCT+ 2 FX 3 SEL 4 ENV 5 LFO 6 EDIT 7 GLO 8 HOME 9 SAVE 10 ARP 11 SEQ 12 PLAY 13 REC
+300 shot
+400 btn 10
+600 shot
+700 btn 3
+900 shot
+1000 btn 12
+1200 btn 8
+2500 shot
+3000 btn 11
+3500 shot
+4000 btn 4
+4500 shot
+5000 btn 5
+5500 shot
+6000 btn 2
+6500 shot
+7000 btn 7
+7500 shot
+8000 btn 9
+8500 shot
+9000 btn 8
+# a fill, then a throw held for a beat, then DROP on the first black key
+9500 keys 0x8
+9600 keys 0
+12000 keys 0x100
+12400 keys 0
+14000 keys 0x2
+14100 keys 0
+15000 shot
+# live keys on the KEYS track
+16000 enc 1 -1
+16500 keys 0x80
+16800 keys 0
+17000 keys 0x4000
+17300 keys 0
+18000 enc 1 1
+# BREAK on the third black key, then BUILD, which drops by itself after four bars
+20000 keys 0x40
+20100 keys 0
+24000 keys 0x8
+24100 keys 0
+28000 shot
+32000 btn 12
+33000 end
