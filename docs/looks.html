@@ -1,0 +1,215 @@
+<title>WitchBox Looks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Special+Elite&family=Permanent+Marker&family=Anton&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:wght@500;700&family=Rubik+Mono+One&family=Share+Tech+Mono&family=Caveat:wght@600&family=Bungee&family=Silkscreen&family=Major+Mono+Display&family=Nunito:wght@600;800&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Oswald:wght@500&family=Archivo+Black&family=Courier+Prime&family=Libre+Barcode+39+Text&display=swap">
+<style>
+/* Layout: a dark gallery wall of 240x240 screens, four across on a desktop, one on a phone. Each screen is drawn
+   as inline SVG from a style spec, so every look shares the same content (the HOME mixer while a DROP plays). */
+:root {
+  --bg: #0b0a0c; --fg: #e8e2d6; --mute: #8d8578; --line: #24211f; --card: #121113; --acc: #f0a23c;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #f1ede6; --fg: #17151a; --mute: #6a6358; --line: #d9d2c6; --card: #faf7f2; --acc: #c7701a; color-scheme: light; } }
+:root[data-theme="light"] { --bg: #f1ede6; --fg: #17151a; --mute: #6a6358; --line: #d9d2c6; --card: #faf7f2; --acc: #c7701a; color-scheme: light; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
+header { max-width: 1120px; margin: 0 auto 28px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 5vw, 56px); letter-spacing: 0.01em; margin: 0 0 6px; text-wrap: balance; line-height: 1; }
+header p { max-width: 62ch; color: var(--mute); line-height: 1.5; margin: 0; font-size: 14px; }
+.grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); gap: 22px; }
+.card { background: var(--card); border: 1px solid var(--line); padding: 8px 8px 12px; display: grid; gap: 8px; min-width: 0; }
+.card svg { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+.card h2 { font-family: var(--display); font-weight: 700; font-size: 20px; margin: 4px 0 0; letter-spacing: 0.02em; display: flex; justify-content: space-between; align-items: baseline; }
+.card h2 small { font-family: var(--body); font-size: 11px; color: var(--mute); letter-spacing: 0.08em; }
+.card p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--mute); }
+.sw { display: flex; gap: 3px; height: 8px; }
+.sw i { flex: 1; display: block; }
+footer { max-width: 1120px; margin: 36px auto 0; color: var(--mute); font-size: 12px; line-height: 1.5; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: translateY(-2px); } }
+</style>
+<header>
+  <h1>WitchBox Looks</h1>
+  <p>Twenty visual identities for the same 240×240 screen: the HOME mixer during a DROP, bar 14, 134 BPM, two tracks muted. Pick one, or point at pieces of several. The type here stands in for a bitmap font the firmware would render at 16 px.</p>
+</header>
+<div class="grid" id="grid"></div>
+<footer>Rendered from one content model so the looks compare fairly. Numbers 01–20 are just for pointing at them. The current firmware is number 1.</footer>
+<script>
+const TR = [["GHOST", .36, 190, 0], ["SUB", .58, 230, 0], ["PADS", .22, 200, 1], ["KEYS", .14, 200, 0], ["DRUMS", .62, 200, 0], ["WEATHER", .11, 150, 1]];
+const KN = [["BPM", 134, .53], ["SWING", 56, .56], ["LOOSE", 55, .55], ["LOPASS", 255, 1]];
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const T = (x, y, s, o = {}) => `<text x="${x}" y="${y}" font-family="${o.f}" font-size="${o.sz || 12}" fill="${o.c}" ${o.w ? `font-weight="${o.w}"` : ""} ${o.a ? `text-anchor="${o.a}"` : ""} ${o.ls ? `letter-spacing="${o.ls}"` : ""} ${o.it ? 'font-style="italic"' : ""} ${o.op ? `opacity="${o.op}"` : ""}>${esc(s)}</text>`;
+const R = (x, y, w, h, c, o = {}) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" ${o.rx ? `rx="${o.rx}"` : ""} ${o.op ? `opacity="${o.op}"` : ""} ${o.st ? `stroke="${o.st}" stroke-width="${o.sw || 1}"` : ""}/>`;
+const seeded = (s) => () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 10000) / 10000; };
+
+/* meters, by kind */
+function meter(k, x, y, w, h, v, c, dim, S) {
+  const vw = Math.round(w * v);
+  if (k === "seg") { let o = ""; const n = Math.floor(w / 7); for (let i = 0; i < n; i++) o += R(x + i * 7, y, 5, h, i < n * v ? c : dim, { op: i < n * v ? 1 : .5 }); return o; }
+  if (k === "dots") { let o = ""; const n = Math.floor(w / 9); for (let i = 0; i < n; i++) o += `<circle cx="${x + 4 + i * 9}" cy="${y + h / 2}" r="${i < n * v ? 3 : 1.5}" fill="${i < n * v ? c : dim}"/>`; return o; }
+  if (k === "line") return `<line x1="${x}" y1="${y + h / 2}" x2="${x + w}" y2="${y + h / 2}" stroke="${dim}" stroke-width="1"/>` + `<line x1="${x}" y1="${y + h / 2}" x2="${x + vw}" y2="${y + h / 2}" stroke="${c}" stroke-width="${h}"/>`;
+  if (k === "ink") return R(x, y + h - 2, w, 1, dim) + R(x, y, vw, h, c, { rx: h / 2 });
+  if (k === "needle") return R(x, y, w, h, dim, { op: .35 }) + R(x + vw - 1, y - 2, 2, h + 4, c);
+  if (k === "hollow") return R(x, y, w, h, "none", { st: dim }) + R(x + 1, y + 1, Math.max(0, vw - 2), h - 2, c);
+  if (k === "bars") { let o = ""; const n = Math.floor(w / 4); for (let i = 0; i < n; i++) { const hh = 2 + Math.round((h - 2) * (0.4 + 0.6 * Math.abs(Math.sin(i * 1.7 + v * 9)))); o += R(x + i * 4, y + h - hh, 3, hh, i < n * v ? c : dim, { op: i < n * v ? 1 : .35 }); } return o; }
+  return R(x, y, w, h, dim) + R(x, y, vw, h, c);
+}
+
+/* the shared content in several layouts; each style says which */
+function layoutList(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = "";
+  o += T(6, 18, up(S.title || "WITCHBOX"), { f, sz: S.hsz || 14, c: S.hi, w: S.w, ls: S.ls });
+  o += T(234, 18, up("DRUMS  A"), { f, sz: 12, c: S.acc, a: "end", w: S.w });
+  o += T(6, 34, up("DROP   14   134 BPM"), { f, sz: 12, c: S.fg, w: S.w });
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 46 + i * 22, c = m ? S.dim : S.fg;
+    o += T(6, y + 14, up(n), { f, sz: 13, c, w: S.w, ls: S.ls });
+    o += meter(S.meter, 86, y + 5, 100, 8, v, m ? S.dim : S.acc, S.line, S);
+    o += T(234, y + 14, String(l), { f, sz: 12, c: S.dim, a: "end" });
+  });
+  o += T(6, 192, up("DROP BUILD BREAK FILL THROW"), { f, sz: 11, c: S.dim, w: S.w, ls: S.ls });
+  o += T(6, 206, up("CATCH SONG") + "     " + up("DUCK"), { f, sz: 11, c: S.dim, w: S.w });
+  o += meter(S.meter, 164, 199, 70, 7, .7, S.acc, S.line, S);
+  KN.forEach(([n, v, b], i) => { const x = 6 + i * 59; o += T(x, 224, up(n), { f, sz: 11, c: S.dim, w: S.w }); o += meter(S.meter === "seg" ? "seg" : "ink", x, 228, 52, 3, b, S.hi, S.line, S); o += T(x, 239, String(v), { f, sz: 10, c: S.hi }); });
+  return o;
+}
+function layoutTiles(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = T(8, 20, up("WITCHBOX"), { f, sz: 14, c: S.hi, w: S.w, ls: S.ls }) + T(232, 20, up("DROP 14 · 134"), { f, sz: 11, c: S.acc, a: "end", w: S.w });
+  TR.forEach(([n, v, l, m], i) => {
+    const x = 8 + (i % 3) * 76, y = 30 + Math.floor(i / 3) * 76, c = S.tile[i % S.tile.length];
+    o += R(x, y, 70, 70, m ? S.line : c, { rx: S.rx, op: m ? .6 : 1 });
+    o += T(x + 6, y + 16, up(n.slice(0, 7)), { f, sz: 11, c: m ? S.dim : S.tileFg, w: S.w });
+    o += meter("hollow", x + 6, y + 48, 58, 8, v, m ? S.dim : S.tileFg, m ? S.dim : S.tileFg, S);
+    o += T(x + 64, y + 36, String(l), { f, sz: 16, c: m ? S.dim : S.tileFg, a: "end", w: S.w });
+  });
+  o += T(8, 198, up("drop · build · break · fill · throw · catch"), { f, sz: 10, c: S.dim });
+  KN.forEach(([n, v, b], i) => { const x = 8 + i * 58; o += T(x, 218, up(n), { f, sz: 10, c: S.dim }); o += T(x, 236, String(v), { f, sz: 15, c: S.fg, w: S.w }); });
+  return o;
+}
+function layoutColumns(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = T(6, 16, up("WITCHBOX  ·  DROP  ·  BAR 14  ·  134"), { f, sz: 10, c: S.dim, ls: S.ls });
+  TR.forEach(([n, v, l, m], i) => {
+    const x = 8 + i * 38, c = m ? S.dim : S.acc;
+    const segs = 14; for (let k = 0; k < segs; k++) { const on = k < segs * v; o += R(x, 160 - k * 9, 28, 6, on ? (k > 10 ? S.hi : c) : S.line, { op: on ? 1 : .5 }); }
+    o += T(x + 14, 180, up(n.slice(0, 5)), { f, sz: 10, c: m ? S.dim : S.fg, a: "middle", w: S.w });
+    o += T(x + 14, 194, String(l), { f, sz: 10, c: S.dim, a: "middle" });
+  });
+  o += R(6, 204, 228, 1, S.line);
+  KN.forEach(([n, v, b], i) => { const x = 8 + i * 58; o += T(x, 220, up(n), { f, sz: 10, c: S.dim }); o += T(x, 236, String(v), { f, sz: 14, c: S.hi, w: S.w }); });
+  return o;
+}
+function layoutRing(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = "";
+  for (let r = 112; r > 40; r -= 6) o += `<circle cx="120" cy="120" r="${r}" fill="none" stroke="${S.line}" stroke-width="${r % 12 === 0 ? 1.2 : .5}" opacity=".9"/>`;
+  o += `<circle cx="120" cy="120" r="38" fill="${S.acc}"/><circle cx="120" cy="120" r="3" fill="${S.bg}"/>`;
+  o += `<defs><path id="arc" d="M 120 120 m -30 0 a 30 30 0 1 1 60 0 a 30 30 0 1 1 -60 0"/></defs>`;
+  o += `<text font-family="${f}" font-size="9" fill="${S.bg}" letter-spacing="1"><textPath href="#arc">${esc(up("WITCHBOX · SIDE A · 134 BPM · DROP · "))}</textPath></text>`;
+  TR.forEach(([n, v, l, m], i) => {
+    const a = -Math.PI / 2 + i * Math.PI / 3, x = 120 + Math.cos(a) * 86, y = 120 + Math.sin(a) * 86;
+    o += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(8 + v * 14).toFixed(1)}" fill="${m ? S.line : S.hi}" opacity="${m ? .6 : .9}"/>`;
+    o += T(x.toFixed(1), (y + 3).toFixed(1), up(n.slice(0, 2)), { f, sz: 9, c: S.bg, a: "middle", w: S.w });
+    o += T((120 + Math.cos(a) * 110).toFixed(1), (120 + Math.sin(a) * 110 + 4).toFixed(1), up(n), { f, sz: 9, c: S.dim, a: "middle" });
+  });
+  o += T(6, 234, up("bpm 134  swing 56  loose 55"), { f, sz: 9, c: S.dim });
+  return o;
+}
+function layoutReceipt(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = R(28, 0, 184, 240, S.paper) + T(120, 22, up("* WITCHBOX *"), { f, sz: 13, c: S.fg, a: "middle", w: S.w }) + T(120, 36, up("DROP   BAR 14   134 BPM"), { f, sz: 10, c: S.fg, a: "middle" });
+  o += T(120, 48, "- - - - - - - - - - - - - -", { f, sz: 10, c: S.dim, a: "middle" });
+  TR.forEach(([n, v, l, m], i) => { const y = 66 + i * 17; o += T(36, y, up(n), { f, sz: 11, c: m ? S.dim : S.fg }); o += T(130, y, "·".repeat(Math.round(v * 14)), { f, sz: 11, c: S.fg }); o += T(204, y, String(l), { f, sz: 11, c: m ? S.dim : S.fg, a: "end" }); });
+  o += T(120, 176, "- - - - - - - - - - - - - -", { f, sz: 10, c: S.dim, a: "middle" });
+  o += T(36, 192, up("DUCK"), { f, sz: 10, c: S.fg }) + T(204, 192, "||||||||||....", { f, sz: 10, c: S.fg, a: "end" });
+  o += T(36, 208, up("BPM 134  SWING 56"), { f, sz: 10, c: S.fg }) + T(36, 222, up("LOOSE 55  LOPASS 255"), { f, sz: 10, c: S.fg });
+  o += T(120, 236, "||| || ||||| | ||| |||| ||", { f, sz: 9, c: S.fg, a: "middle" });
+  return o;
+}
+function layoutTube(S) {
+  const f = S.font, up = s => S.lower ? s.toLowerCase() : s;
+  let o = T(10, 24, "WITCHBOX", { f, sz: 18, c: S.fg, w: 700 }) + T(230, 24, "DROP · 14", { f, sz: 11, c: S.dim, a: "end", w: 700 });
+  TR.forEach(([n, v, l, m], i) => {
+    const y = 48 + i * 24, c = m ? S.line : S.tile[i];
+    o += `<line x1="18" y1="${y}" x2="222" y2="${y}" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`;
+    for (let k = 0; k <= 8; k++) { const x = 18 + k * 25.5, on = k / 8 <= v; o += `<circle cx="${x}" cy="${y}" r="${on ? 4 : 2.5}" fill="${S.bg}" stroke="${c}" stroke-width="2"/>`; }
+    o += T(18, y - 7, up(n), { f, sz: 9, c: m ? S.dim : S.fg, w: 700 });
+    o += T(222, y - 7, String(l), { f, sz: 9, c: S.dim, a: "end", w: 700 });
+  });
+  o += R(10, 196, 220, 1, S.line);
+  KN.forEach(([n, v, b], i) => { const x = 10 + i * 56; o += T(x, 214, up(n), { f, sz: 9, c: S.dim, w: 700 }); o += T(x, 232, String(v), { f, sz: 14, c: S.fg, w: 700 }); });
+  return o;
+}
+function layoutRadar(S) {
+  const f = S.font;
+  let o = "";
+  for (let r = 100; r > 0; r -= 25) o += `<circle cx="120" cy="128" r="${r}" fill="none" stroke="${S.line}" stroke-width=".8"/>`;
+  o += `<line x1="20" y1="128" x2="220" y2="128" stroke="${S.line}" stroke-width=".8"/><line x1="120" y1="28" x2="120" y2="228" stroke="${S.line}" stroke-width=".8"/>`;
+  const rnd = seeded(7);
+  TR.forEach(([n, v, l, m], i) => {
+    const a = -Math.PI / 2 + i * Math.PI / 3;
+    for (let k = 0; k < 6; k++) { const d = 20 + rnd() * 80 * v + 10, aa = a + (rnd() - .5) * .8, x = 120 + Math.cos(aa) * d, y = 128 + Math.sin(aa) * d, lv = v * (0.5 + rnd()); o += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(3 + lv * 9).toFixed(1)}" fill="${m ? S.line : lv > .6 ? S.hi : lv > .35 ? S.acc : S.acc2}" opacity="${m ? .5 : .85}"/>`; }
+    o += T((120 + Math.cos(a) * 108).toFixed(1), (128 + Math.sin(a) * 108 + 3).toFixed(1), n.slice(0, 3), { f, sz: 9, c: S.dim, a: "middle" });
+  });
+  o += `<path d="M120 128 L120 28 A100 100 0 0 1 206 78 Z" fill="${S.hi}" opacity=".12"/>`;
+  o += T(6, 14, "WITCHBOX  DROP  BAR 14", { f, sz: 10, c: S.fg }) + T(234, 14, "134", { f, sz: 10, c: S.hi, a: "end" });
+  o += T(6, 236, "BPM 134  SWING 56  LOOSE 55  LP 255", { f, sz: 9, c: S.dim });
+  return o;
+}
+
+/* decorations drawn under the content */
+const D = {
+  rain(S, seed = 3, n = 60) { const r = seeded(seed); let o = ""; for (let i = 0; i < n; i++) { const x = r() * 240, y = r() * 240, l = 6 + r() * 22; o += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x - l * .25).toFixed(1)}" y2="${(y + l).toFixed(1)}" stroke="${S.rain || S.line}" stroke-width=".8" opacity="${(.2 + r() * .5).toFixed(2)}"/>`; } return o; },
+  scan(S) { let o = ""; for (let y = 0; y < 240; y += 3) o += R(0, y, 240, 1, "#000", { op: .28 }); return o; },
+  halftone(S, c) { let o = ""; for (let y = 4; y < 240; y += 8) for (let x = 4; x < 240; x += 8) o += `<circle cx="${x}" cy="${y}" r="${(1 + 1.6 * ((x + y) % 24) / 24).toFixed(1)}" fill="${c}" opacity=".35"/>`; return o; },
+  grid(S, step = 12) { let o = ""; for (let i = 0; i <= 240; i += step) o += `<line x1="${i}" y1="0" x2="${i}" y2="240" stroke="${S.line}" stroke-width=".5"/><line x1="0" y1="${i}" x2="240" y2="${i}" stroke="${S.line}" stroke-width=".5"/>`; return o; },
+  grain(id) { return `<filter id="${id}"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .18"/></feComponentTransfer></filter><rect width="240" height="240" filter="url(#${id})"/>`; },
+  tunnel(S) { let o = ""; for (let k = 0; k < 9; k++) { const s = 240 - k * 26; o += R(120 - s / 2, 120 - s / 2 + k * 2, s, s, "none", { st: S.line }); } for (const [x, y] of [[0, 0], [240, 0], [0, 240], [240, 240]]) o += `<line x1="${x}" y1="${y}" x2="120" y2="128" stroke="${S.line}" stroke-width=".6"/>`; return o; },
+  bokeh(S, seed = 11) { const r = seeded(seed); let o = ""; for (let i = 0; i < 28; i++) o += `<circle cx="${(r() * 240).toFixed(1)}" cy="${(r() * 240).toFixed(1)}" r="${(3 + r() * 14).toFixed(1)}" fill="${S.acc}" opacity="${(.04 + r() * .12).toFixed(2)}"/>`; return o; },
+  rings(S) { let o = ""; const cols = ["#ff5c8a", "#ffb84d", "#7dffb3", "#5ad1ff", "#b48cff"]; for (let r = 150; r > 10; r -= 7) o += `<circle cx="200" cy="40" r="${r}" fill="none" stroke="${cols[(r / 7 | 0) % 5]}" stroke-width="2.5" opacity=".18"/>`; return o; },
+  slab(S) { return R(0, 0, 240, 240, S.bg) + R(0, 0, 240, 40, S.acc) + R(0, 236, 240, 4, S.acc) + `<polygon points="0,40 240,40 240,52 0,46" fill="#000" opacity=".25"/>`; },
+  lcdPix(S) { let o = ""; for (let y = 0; y < 240; y += 4) for (let x = 0; x < 240; x += 4) o += R(x, y, 3, 3, S.line, { op: .35 }); return o; },
+  chalk(S) { const r = seeded(21); let o = ""; for (let i = 0; i < 120; i++) o += R((r() * 240).toFixed(1), (r() * 240).toFixed(1), 1 + r() * 2, 1, S.dim, { op: .25 }); return o; },
+  pattern(S) { let o = ""; for (let i = -240; i < 240; i += 14) o += `<line x1="${i}" y1="0" x2="${i + 240}" y2="240" stroke="${S.line}" stroke-width="5"/>`; return o; },
+};
+
+const LOOKS = [
+  { name: "Amber Terminus", note: "What ships today. Five-step amber ramp, 16 px bitmap font, everything on a black ground.", bg: "#000", fg: "#e17808", dim: "#aa5200", hi: "#ffa628", acc: "#e17808", line: "#3c1a00", font: "VT323", hsz: 16, meter: "bar", layout: layoutList, w: 400 },
+  { name: "Night Bus", note: "Rain on the top deck window. Sodium-amber type over a blue-black with streaks; meters as glowing strips.", bg: "#070a12", fg: "#f2b45c", dim: "#6c5a3c", hi: "#ffd27a", acc: "#ff9f2e", line: "#1a2238", rain: "#2a3a5c", font: "Share Tech Mono", meter: "ink", layout: layoutList, deco: S => D.rain(S, 3, 70) + D.bokeh(S, 5) },
+  { name: "Cassette J-Card", note: "A dubbed tape, cream card stock and one red. Handwritten feel, dotted meters, lower-case labels.", bg: "#efe6d3", fg: "#1f1a16", dim: "#8a7b68", hi: "#c8102e", acc: "#c8102e", line: "#d8ccb6", font: "Special Elite", meter: "dots", layout: layoutList, lower: true, deco: S => `<rect width="240" height="240" filter="url(#g3)" opacity=".5"/>`, defs: D.grain("g3") },
+  { name: "Pirate Radio", note: "Green phosphor and scanlines, a transmitter in a tower block. Segment meters, all caps, nothing soft.", bg: "#020804", fg: "#5dff7a", dim: "#1f7a33", hi: "#c9ffd2", acc: "#5dff7a", line: "#0b2a12", font: "VT323", hsz: 16, meter: "seg", layout: layoutList, deco: D.scan, w: 400 },
+  { name: "Rave Flyer 1998", note: "Photocopied flyer: black on acid yellow with a magenta hit, halftone dots, heavy condensed type.", bg: "#f6ec1a", fg: "#111", dim: "#5a5410", hi: "#ff2bb0", acc: "#111", line: "#d9cf12", font: "Anton", meter: "bar", layout: layoutTiles, tile: ["#111", "#ff2bb0", "#111"], tileFg: "#f6ec1a", rx: 0, deco: S => D.halftone(S, "#111") },
+  { name: "Oil-Slick Vinyl", note: "Iridescent grooves on black. The accent is a rainbow sheen, type is a thin mono; everything else stays dark.", bg: "#050507", fg: "#e9e7f0", dim: "#6a6675", hi: "#b48cff", acc: "#5ad1ff", line: "#17161c", font: "Major Mono Display", meter: "line", layout: layoutList, lower: true, deco: D.rings },
+  { name: "Tube Map", note: "Each track is a line in its own colour with stations as the meter. Bold humanist sans, white ground.", bg: "#fff", fg: "#111", dim: "#777", hi: "#111", acc: "#dc241f", line: "#dcdcdc", font: "Nunito", meter: "bar", layout: layoutTube, tile: ["#dc241f", "#0019a8", "#ffd300", "#00782a", "#f3a9bb", "#9b0056"] },
+  { name: "Thermal Receipt", note: "A till roll from the night shop. Monospace, dotted leaders, faded ink, a barcode for the seed.", bg: "#1b1a18", paper: "#f3efe6", fg: "#2b2722", dim: "#9a9389", hi: "#2b2722", acc: "#2b2722", line: "#d7d1c5", font: "Courier Prime", meter: "dots", layout: layoutReceipt },
+  { name: "Portable Minidisc", note: "A 2001 player's LCD: grey-green panel, pixel grid, cyan highlight, segmented level meters.", bg: "#aab59b", fg: "#1c2419", dim: "#55634f", hi: "#0a3f55", acc: "#0a3f55", line: "#93a087", font: "Silkscreen", meter: "seg", layout: layoutList, deco: D.lcdPix },
+  { name: "Blueprint", note: "White hairlines on Prussian blue with a drafting grid; stencil-ish caps, meters as needles on a scale.", bg: "#0e2a5c", fg: "#e9f1ff", dim: "#8aa4d6", hi: "#fff", acc: "#ffd166", line: "#1d3f7d", font: "Oswald", meter: "needle", layout: layoutList, deco: S => D.grid(S, 12), ls: 1 },
+  { name: "Fog Film", note: "A blurred still from a VHS of a rainy street. Soft serif, pale type over fog grey, meters as thin ink.", bg: "#2a2c30", fg: "#e6e3dc", dim: "#8e8c86", hi: "#fff", acc: "#cfc6b4", line: "#3c3e44", font: "Cormorant Garamond", hsz: 17, meter: "ink", layout: layoutList, lower: true, deco: S => `<rect width="240" height="240" filter="url(#g11)"/>` + D.bokeh({ acc: "#fff" }, 9), defs: D.grain("g11") },
+  { name: "Concrete Estate", note: "Brutalist: raw grey slab, a red band, stencil caps. Values huge in tiles, no curves anywhere.", bg: "#6f6f6a", fg: "#f2f2ee", dim: "#c9c9c2", hi: "#fff", acc: "#c8102e", line: "#55554f", font: "Archivo Black", meter: "hollow", layout: layoutTiles, tile: ["#4a4a46", "#4a4a46", "#c8102e"], tileFg: "#f2f2ee", rx: 0, deco: D.slab },
+  { name: "Orange LED Grid", note: "Hardware-sequencer look: dark panel, orange LED segments, condensed caps. Columns of light per track.", bg: "#101010", fg: "#f0f0f0", dim: "#6b6b6b", hi: "#ffe08a", acc: "#ff7a00", line: "#262626", font: "Barlow Condensed", meter: "seg", layout: layoutColumns, w: 700, ls: .5 },
+  { name: "Pastel Flat", note: "Colour-coded tracks on white, rounded tiles, friendly sans. Reads from across the room.", bg: "#fbfbf8", fg: "#1e1e24", dim: "#8a8a94", hi: "#1e1e24", acc: "#1e1e24", line: "#e8e8e2", font: "Nunito", meter: "hollow", layout: layoutTiles, tile: ["#9ad0ec", "#f6b8b8", "#c9e4a6", "#ffd98a", "#d7c4f0", "#bfe7e3"], tileFg: "#1e1e24", rx: 8, w: 800 },
+  { name: "Garage 12 Inch", note: "A white-label record: the mixer is the label, tracks sit around it, grooves run to the edge.", bg: "#0a0a0a", fg: "#eee", dim: "#8a8a8a", hi: "#f2f2f2", acc: "#e8e3d4", line: "#1e1e1e", font: "Space Mono", meter: "bar", layout: layoutRing, w: 700 },
+  { name: "Weather Radar", note: "Precipitation blobs for levels, a sweeping beam, green to yellow to red. The WEATHER track made literal.", bg: "#03110b", fg: "#bfe7cf", dim: "#4f8a66", hi: "#ff3b30", acc: "#ffd60a", acc2: "#34c759", line: "#0f3a24", font: "Share Tech Mono", meter: "bar", layout: layoutRadar },
+  { name: "Sodium Tunnel", note: "Underpass perspective lines and sodium-orange glow bars on black; wide type sits in the vanishing point.", bg: "#000", fg: "#ffb15c", dim: "#7a4a1c", hi: "#ffd9a3", acc: "#ff8c1a", line: "#2a1706", font: "Rubik Mono One", hsz: 11, meter: "ink", layout: layoutList, deco: D.tunnel },
+  { name: "Dubplate Chalk", note: "Matte acetate and chalk marker. Handwriting, dusty speckle, meters as rough strokes.", bg: "#151312", fg: "#f1ebe0", dim: "#8c857a", hi: "#fff", acc: "#f1ebe0", line: "#2b2825", font: "Caveat", hsz: 18, meter: "line", layout: layoutList, lower: true, deco: D.chalk, w: 600 },
+  { name: "Nokia LCD", note: "One-bit olive LCD, 8 px pixel font, nothing but black and backlight. The gameboy of grooveboxes.", bg: "#9db24a", fg: "#1a2510", dim: "#4c5d2a", hi: "#1a2510", acc: "#1a2510", line: "#86993d", font: "Press Start 2P", hsz: 9, meter: "seg", layout: layoutList, deco: D.lcdPix },
+  { name: "Hazard Stripe", note: "Warehouse night: black and warning-yellow diagonals behind the mixer, wide display type. Loud on purpose.", bg: "#0d0d0d", fg: "#f5f5f0", dim: "#8a8a80", hi: "#ffd400", acc: "#ffd400", line: "#2a2600", font: "Bungee", hsz: 12, meter: "bar", layout: layoutList, deco: D.pattern },
+];
+for (const S of LOOKS) if (S.font === "Press Start 2P") S.ls = 0;
+
+function screen(S) {
+  const defs = S.defs ? `<defs>${S.defs}</defs>` : "";
+  const deco = S.deco ? `<g>${S.deco(S)}</g>` : "";
+  const body = S.layout(S);
+  return `<svg viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="${esc(S.name)}">${defs}<rect width="240" height="240" fill="${S.bg}"/>${deco}${body}</svg>`;
+}
+const grid = document.getElementById("grid");
+LOOKS.forEach((S, i) => {
+  const c = document.createElement("div");
+  c.className = "card";
+  const sw = [S.bg, S.fg, S.dim, S.acc, S.hi, S.line].map(x => `<i style="background:${x}"></i>`).join("");
+  c.innerHTML = `${screen(S)}<h2><span>${esc(S.name)}</span><small>${String(i + 1).padStart(2, "0")}</small></h2><p>${esc(S.note)}</p><div class="sw">${sw}</div>`;
+  grid.appendChild(c);
+});
+</script>
