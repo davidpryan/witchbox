@@ -1,4 +1,5 @@
 <title>WitchBox Looks</title>
+<meta charset="utf-8">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Special+Elite&family=Permanent+Marker&family=Anton&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:wght@500;700&family=Rubik+Mono+One&family=Share+Tech+Mono&family=Caveat:wght@600&family=Bungee&family=Silkscreen&family=Major+Mono+Display&family=Nunito:wght@600;800&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Oswald:wght@500&family=Archivo+Black&family=Courier+Prime&family=Libre+Barcode+39+Text&display=swap">
 <style>
@@ -67,7 +68,7 @@ function layoutList(S) {
     o += meter(S.meter, 86, y + 5, 100, 8, v, m ? S.dim : S.acc, S.line, S);
     o += T(234, y + 14, String(l), { f, sz: 12, c: S.dim, a: "end" });
   });
-  o += T(6, 192, up("DROP BUILD BREAK FILL THROW"), { f, sz: 11, c: S.dim, w: S.w, ls: S.ls });
+  o += T(6, 192, up("DROP BUILD BREAK FILL THROW"), { f, sz: S.msz || 11, c: S.dim, w: S.w, ls: S.ls });
   o += T(6, 206, up("CATCH SONG") + "     " + up("DUCK"), { f, sz: 11, c: S.dim, w: S.w });
   o += meter(S.meter, 164, 199, 70, 7, .7, S.acc, S.line, S);
   KN.forEach(([n, v, b], i) => { const x = 6 + i * 59; o += T(x, 224, up(n), { f, sz: 11, c: S.dim, w: S.w }); o += meter(S.meter === "seg" ? "seg" : "ink", x, 228, 52, 3, b, S.hi, S.line, S); o += T(x, 239, String(v), { f, sz: 10, c: S.hi }); });
@@ -83,7 +84,7 @@ function layoutTiles(S) {
     o += meter("hollow", x + 6, y + 48, 58, 8, v, m ? S.dim : S.tileFg, m ? S.dim : S.tileFg, S);
     o += T(x + 64, y + 36, String(l), { f, sz: 16, c: m ? S.dim : S.tileFg, a: "end", w: S.w });
   });
-  o += T(8, 198, up("drop · build · break · fill · throw · catch"), { f, sz: 10, c: S.dim });
+  o += T(8, 198, up("drop  build  break  fill  throw"), { f, sz: 10, c: S.dim });
   KN.forEach(([n, v, b], i) => { const x = 8 + i * 58; o += T(x, 218, up(n), { f, sz: 10, c: S.dim }); o += T(x, 236, String(v), { f, sz: 15, c: S.fg, w: S.w }); });
   return o;
 }
@@ -113,7 +114,7 @@ function layoutRing(S) {
     o += T(x.toFixed(1), (y + 3).toFixed(1), up(n.slice(0, 2)), { f, sz: 9, c: S.bg, a: "middle", w: S.w });
     o += T((120 + Math.cos(a) * 110).toFixed(1), (120 + Math.sin(a) * 110 + 4).toFixed(1), up(n), { f, sz: 9, c: S.dim, a: "middle" });
   });
-  o += T(6, 234, up("bpm 134  swing 56  loose 55"), { f, sz: 9, c: S.dim });
+  o += T(6, 14, up("bpm 134  swing 56  loose 55"), { f, sz: 9, c: S.dim });
   return o;
 }
 function layoutReceipt(S) {
@@ -154,7 +155,7 @@ function layoutRadar(S) {
   });
   o += `<path d="M120 128 L120 28 A100 100 0 0 1 206 78 Z" fill="${S.hi}" opacity=".12"/>`;
   o += T(6, 14, "WITCHBOX  DROP  BAR 14", { f, sz: 10, c: S.fg }) + T(234, 14, "134", { f, sz: 10, c: S.hi, a: "end" });
-  o += T(6, 236, "BPM 134  SWING 56  LOOSE 55  LP 255", { f, sz: 9, c: S.dim });
+  o += T(6, 236, "BPM 134  SWING 56  LOOSE 55", { f, sz: 9, c: S.dim });
   return o;
 }
 
@@ -191,7 +192,7 @@ const LOOKS = [
   { name: "Pastel Flat", note: "Colour-coded tracks on white, rounded tiles, friendly sans. Reads from across the room.", bg: "#fbfbf8", fg: "#1e1e24", dim: "#8a8a94", hi: "#1e1e24", acc: "#1e1e24", line: "#e8e8e2", font: "Nunito", meter: "hollow", layout: layoutTiles, tile: ["#9ad0ec", "#f6b8b8", "#c9e4a6", "#ffd98a", "#d7c4f0", "#bfe7e3"], tileFg: "#1e1e24", rx: 8, w: 800 },
   { name: "Garage 12 Inch", note: "A white-label record: the mixer is the label, tracks sit around it, grooves run to the edge.", bg: "#0a0a0a", fg: "#eee", dim: "#8a8a8a", hi: "#f2f2f2", acc: "#e8e3d4", line: "#1e1e1e", font: "Space Mono", meter: "bar", layout: layoutRing, w: 700 },
   { name: "Weather Radar", note: "Precipitation blobs for levels, a sweeping beam, green to yellow to red. The WEATHER track made literal.", bg: "#03110b", fg: "#bfe7cf", dim: "#4f8a66", hi: "#ff3b30", acc: "#ffd60a", acc2: "#34c759", line: "#0f3a24", font: "Share Tech Mono", meter: "bar", layout: layoutRadar },
-  { name: "Sodium Tunnel", note: "Underpass perspective lines and sodium-orange glow bars on black; wide type sits in the vanishing point.", bg: "#000", fg: "#ffb15c", dim: "#7a4a1c", hi: "#ffd9a3", acc: "#ff8c1a", line: "#2a1706", font: "Rubik Mono One", hsz: 11, meter: "ink", layout: layoutList, deco: D.tunnel },
+  { name: "Sodium Tunnel", note: "Underpass perspective lines and sodium-orange glow bars on black; wide type sits in the vanishing point.", bg: "#000", fg: "#ffb15c", dim: "#7a4a1c", hi: "#ffd9a3", acc: "#ff8c1a", line: "#2a1706", font: "Rubik Mono One", hsz: 11, msz: 8, meter: "ink", layout: layoutList, deco: D.tunnel },
   { name: "Dubplate Chalk", note: "Matte acetate and chalk marker. Handwriting, dusty speckle, meters as rough strokes.", bg: "#151312", fg: "#f1ebe0", dim: "#8c857a", hi: "#fff", acc: "#f1ebe0", line: "#2b2825", font: "Caveat", hsz: 18, meter: "line", layout: layoutList, lower: true, deco: D.chalk, w: 600 },
   { name: "Nokia LCD", note: "One-bit olive LCD, 8 px pixel font, nothing but black and backlight. The gameboy of grooveboxes.", bg: "#9db24a", fg: "#1a2510", dim: "#4c5d2a", hi: "#1a2510", acc: "#1a2510", line: "#86993d", font: "Press Start 2P", hsz: 9, meter: "seg", layout: layoutList, deco: D.lcdPix },
   { name: "Hazard Stripe", note: "Warehouse night: black and warning-yellow diagonals behind the mixer, wide display type. Loud on purpose.", bg: "#0d0d0d", fg: "#f5f5f0", dim: "#8a8a80", hi: "#ffd400", acc: "#ffd400", line: "#2a2600", font: "Bungee", hsz: 12, meter: "bar", layout: layoutList, deco: D.pattern },
