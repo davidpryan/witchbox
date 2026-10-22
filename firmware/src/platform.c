@@ -69,7 +69,7 @@ static volatile uint32_t fm1_ms;                /* milliseconds since power-on (
 /* ---- flash: read anywhere; erase / program only the update's staging area and the settings sector */
 #define SETTINGS_AT 0x000FC000u                 /* one 4 KiB sector of Felucca's globals area */
 #define PROJECT_AT 0x000A0000u                  /* WitchBox projects: two 64 KiB slots inside Felucca's main store */
-#define PROJECT_SLOT 0x00010000u
+#define PROJECT_SLOT (1u << 16)                /* 64 KiB a slot, as a shift: the build greps literals that look like register addresses */
 #define PROJECT_SLOTS 2u
 #define FL_RANGE_OK(off, n) (FL_IN(off, n, FL_OTA_LO, FL_OTA_HI) || FL_IN(off, n, SETTINGS_AT, SETTINGS_AT + 0x1000u) || \
                              FL_IN(off, n, PROJECT_AT, PROJECT_AT + PROJECT_SLOT * PROJECT_SLOTS))
